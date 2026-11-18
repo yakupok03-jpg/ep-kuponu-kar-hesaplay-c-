@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EP Kupon">
+<meta name="description" content="Lucifer sunucusu EP kupon alış-satış ve kâr hesaplayıcı">
+<title>EP Kupon Kâr Hesaplama</title>
+<link rel="manifest" id="manifestLink" href="">
+<link rel="apple-touch-icon" id="appleIcon" href="">
+<link rel="icon" id="favIcon" href="">
+<style>
+  :root{
+    --bg:#0b0f17; --card:#131a26; --card2:#1a2333; --line:#263248;
+    --text:#e8edf6; --muted:#8b98ad; --accent:#f5b942; --accent2:#ffcf6b;
+    --green:#2ecc71; --green-bg:rgba(46,204,113,.12);
+    --red:#ff5d5d; --red-bg:rgba(255,93,93,.12);
+    --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    overflow-x:hidden;-webkit-text-size-adjust:100%}
+  body{padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 24px)}
+  .wrap{max-width:560px;margin:0 auto;width:100%}
+  header{display:flex;align-items:center;gap:12px;margin:6px 2px 16px}
+  .logo{width:44px;height:44px;border-radius:12px;flex:0 0 auto;
+    background:linear-gradient(135deg,var(--accent),#c97a12);display:grid;place-items:center;
+    font-weight:800;color:#1b1304;font-size:15px;letter-spacing:.5px}
+  h1{font-size:20px;margin:0;line-height:1.2}
+  .sub{color:var(--muted);font-size:13px;margin-top:2px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px;margin-bottom:14px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+    margin:0 0 12px;font-weight:700}
+  .field{margin-bottom:12px}
+  .field:last-child{margin-bottom:0}
+  label{display:block;font-size:14px;color:var(--text);margin-bottom:6px;font-weight:600}
+  .inbox{display:flex;align-items:center;background:var(--card2);border:1.5px solid var(--line);
+    border-radius:12px;overflow:hidden;transition:border-color .15s}
+  .inbox:focus-within{border-color:var(--accent)}
+  .inbox.err{border-color:var(--red)}
+  .inbox input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);
+    font-size:18px;padding:13px 12px;font-variant-numeric:tabular-nums}
+  .unit{padding:0 14px;color:var(--muted);font-size:14px;font-weight:600;white-space:nowrap}
+  .hint{font-size:12px;color:var(--red);margin-top:5px;min-height:0;display:none}
+  .hint.show{display:block}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .eq{font-size:12px;color:var(--muted);margin-top:8px}
+  .hero{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
+  .big{border-radius:var(--radius);padding:16px;border:1.5px solid var(--line);background:var(--card)}
+  .big .k{font-size:13px;color:var(--muted);font-weight:600}
+  .big .v{font-size:32px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums;
+    word-break:break-word;line-height:1.15}
+  .big .s{font-size:13px;color:var(--muted);margin-top:4px}
+  .pos{color:var(--green)} .neg{color:var(--red)}
+  .big.pos{border-color:rgba(46,204,113,.5);background:var(--green-bg)}
+  .big.neg{border-color:rgba(255,93,93,.5);background:var(--red-bg)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .card{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+  .card .k{font-size:12px;color:var(--muted);line-height:1.3}
+  .card .v{font-size:18px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;
+    word-break:break-word}
+  .card.wide{grid-column:1 / -1}
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  button{font:inherit;font-size:16px;font-weight:700;border:0;border-radius:14px;
+    padding:15px 12px;cursor:pointer;min-height:52px}
+  .btn-main{background:var(--accent);color:#1b1304}
+  .btn-main:active{background:var(--accent2)}
+  .btn-sec{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+  .btn-sec:active{background:var(--line)}
+  .warn{background:var(--red-bg);border:1px solid rgba(255,93,93,.4);color:#ffb3b3;
+    border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:14px;display:none}
+  .warn.show{display:block}
+  .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);
+    transform:translateX(-50%) translateY(30px);opacity:0;background:#222c3d;color:var(--text);
+    padding:12px 18px;border-radius:12px;font-size:14px;transition:.25s;pointer-events:none;
+    border:1px solid var(--line);max-width:90vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:6px}
+  @media (max-width:360px){
+    .row2{grid-template-columns:1fr}
+    .big .v{font-size:27px}
+    .card .v{font-size:16px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">EP</div>
+    <div>
+      <h1>EP Kupon Kâr Hesaplama</h1>
+      <div class="sub">Lucifer sunucusu · 50 EP kupon alış-satış</div>
+    </div>
+  </header>
+
+  <div class="warn" id="warn"></div>
+
+  <!-- SONUÇLAR (öne çıkanlar) -->
+  <div class="hero">
+    <div class="big" id="boxTotal">
+      <div class="k">Toplam Net Kâr</div>
+      <div class="v" id="rTotalProfit">—</div>
+      <div class="s" id="rTotalSub">&nbsp;</div>
+    </div>
+    <div class="big" id="boxUnit">
+      <div class="k">Kupon Başına Net Kâr</div>
+      <div class="v" id="rUnitProfit">—</div>
+      <div class="s" id="rUnitSub">&nbsp;</div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Sonuçlar</h2>
+    <div class="grid">
+      <div class="card"><div class="k">Kupon başına alış maliyeti</div><div class="v" id="rBuy">—</div></div>
+      <div class="card"><div class="k">Kupon başına satış geliri</div><div class="v" id="rSell">—</div></div>
+      <div class="card"><div class="k">Kâr yüzdesi</div><div class="v" id="rPct">—</div></div>
+      <div class="card"><div class="k">Alınabilecek kupon</div><div class="v" id="rCount">—</div></div>
+      <div class="card"><div class="k">Kullanılan EP</div><div class="v" id="rUsedEp">—</div></div>
+      <div class="card"><div class="k">Kalan EP</div><div class="v" id="rLeftEp">—</div></div>
+      <div class="card"><div class="k">Toplam yatırım</div><div class="v" id="rInvest">—</div></div>
+      <div class="card"><div class="k">Toplam satış geliri</div><div class="v" id="rRevenue">—</div></div>
+      <div class="card"><div class="k">EP birim maliyeti</div><div class="v" id="rEpUnit">—</div></div>
+      <div class="card"><div class="k">Toplam komisyon</div><div class="v" id="rComm">—</div></div>
+    </div>
+  </section>
+
+  <div class="btns">
+    <button class="btn-main" id="btnShare" type="button">📤 Paylaş</button>
+    <button class="btn-sec" id="btnReset" type="button">↺ İlk değerler</button>
+  </div>
+
+  <!-- GİRİŞLER -->
+  <section>
+    <h2>EP Satın Alma</h2>
+    <div class="field">
+      <label for="packPrice">EP paket fiyatı</label>
+      <div class="inbox"><input id="packPrice" inputmode="decimal" autocomplete="off"><span class="unit">₺</span></div>
+      <div class="hint"></div>
+    </div>
+    <div class="field">
+      <label for="packEp">Satın alınan EP miktarı</label>
+      <div class="inbox"><input id="packEp" inputmode="decimal" autocomplete="off"><span class="unit">EP</span></div>
+      <div class="hint"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>50 EP Kupon</h2>
+    <div class="field">
+      <label for="couponEp">Kupon alış maliyeti</label>
+      <div class="inbox"><input id="couponEp" inputmode="decimal" autocomplete="off"><span class="unit">EP</span></div>
+      <div class="hint"></div>
+    </div>
+    <div class="field">
+      <label for="sellYang">Kupon satış fiyatı</label>
+      <div class="inbox"><input id="sellYang" inputmode="decimal" autocomplete="off"><span class="unit">M Yang</span></div>
+      <div class="hint"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Yang Kuru</h2>
+    <div class="row2">
+      <div class="field">
+        <label for="rateYang">Yang miktarı</label>
+        <div class="inbox"><input id="rateYang" inputmode="decimal" autocomplete="off"><span class="unit">M</span></div>
+        <div class="hint"></div>
+      </div>
+      <div class="field">
+        <label for="rateTl">Karşılığı</label>
+        <div class="inbox"><input id="rateTl" inputmode="decimal" autocomplete="off"><span class="unit">₺</span></div>
+        <div class="hint"></div>
+      </div>
+    </div>
+    <div class="eq" id="rateEq">&nbsp;</div>
+  </section>
+
+  <section>
+    <h2>Satış Komisyonu</h2>
+    <div class="field">
+      <label for="commission">Komisyon oranı (satış gelirinden düşülür)</label>
+      <div class="inbox"><input id="commission" inputmode="decimal" autocomplete="off"><span class="unit">%</span></div>
+      <div class="hint"></div>
+    </div>
+  </section>
+
+  <footer>Değerler cihazında saklanır · İnternetsiz çalışır</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script id="calc-core">
+/* ====== HESAPLAMA ÇEKİRDEĞİ (saf fonksiyonlar, ara değerler yuvarlanmaz) ====== */
+var DEFAULTS = {packPrice:5000, packEp:32500, couponEp:80, sellYang:182, rateYang:103, rateTl:8.75, commission:0};
+
+/* Türkçe/İngilizce sayı girişini çözer: "8,75" "1.234,5" "5.000" "8.75" "1 000" */
+function parseNum(raw){
+  if (raw === null || raw === undefined) return NaN;
+  var s = String(raw).trim().replace(/\s| |₺|%/g,'');
+  if (s === '') return NaN;
+  var hasDot = s.indexOf('.') > -1, hasComma = s.indexOf(',') > -1;
+  if (hasDot && hasComma){
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g,'').replace(',', '.'); // 1.234,5
+    else s = s.replace(/,/g,'');                                                            // 1,234.5
+  } else if (hasComma){
+    if (/^-?\d{1,3}(,\d{3}){2,}$/.test(s)) s = s.replace(/,/g,'');  // 1,234,567
+    else s = s.replace(',', '.');                                   // 8,75
+  } else if (hasDot){
+    if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g,'');   // 5.000 / 32.500 (binlik)
+  }
+  if (!/^-?\d*\.?\d+$|^-?\d+\.?$/.test(s)) return NaN;
+  var n = Number(s);
+  return isFinite(n) ? n : NaN;
+}
+
+function calculate(v){
+  var epUnit   = v.packPrice / v.packEp;                       // A
+  var buyCost  = v.couponEp * epUnit;                          // B
+  var sellTl   = v.sellYang * v.rateTl / v.rateYang;           // C
+  var commRate = v.commission / 100;
+  var commUnit = sellTl * commRate;
+  var unitProfit = sellTl - commUnit - buyCost;                // D (komisyon sonrası)
+  var pct      = unitProfit / buyCost * 100;                   // E
+  // F — kayan nokta hatasına karşı küçük tolerans (ör. 0.3/0.1)
+  var ratio    = v.packEp / v.couponEp;
+  var count    = Math.floor(ratio + 1e-9);
+  if (count < 0) count = 0;
+  var usedEp   = count * v.couponEp;
+  var leftEp   = v.packEp - usedEp;                            // J
+  if (Math.abs(leftEp) < 1e-9) leftEp = 0;
+  var invest   = count * buyCost;                              // G
+  var revenue  = count * sellTl;                               // H (brüt)
+  var commTotal = revenue * commRate;
+  var totalProfit = revenue - commTotal - invest;              // I
+  return {epUnit:epUnit, buyCost:buyCost, sellTl:sellTl, commUnit:commUnit, unitProfit:unitProfit,
+          pct:pct, count:count, usedEp:usedEp, leftEp:leftEp, invest:invest, revenue:revenue,
+          commTotal:commTotal, totalProfit:totalProfit};
+}
+
+function validate(v){
+  var errs = {};
+  ['packPrice','packEp','couponEp','sellYang','rateYang','rateTl'].forEach(function(k){
+    if (!isFinite(v[k])) errs[k] = 'Geçerli bir sayı girin';
+    else if (v[k] <= 0) errs[k] = 'Sıfırdan büyük olmalı';
+  });
+  if (!isFinite(v.commission)) errs.commission = 'Geçerli bir sayı girin (boşsa 0)';
+  else if (v.commission < 0 || v.commission >= 100) errs.commission = '0 ile 100 arasında olmalı';
+  if (!errs.couponEp && !errs.packEp && v.couponEp > v.packEp) errs.couponEp = 'EP miktarından büyük; hiç kupon alınamaz';
+  return errs;
+}
+</script>
+
+<script>
+/* ====== ARAYÜZ ====== */
+(function(){
+  var KEYS = ['packPrice','packEp','couponEp','sellYang','rateYang','rateTl','commission'];
+  var STORE = 'epKuponHesap.v1';
+  var $ = function(id){ return document.getElementById(id); };
+
+  var fTL  = new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2, maximumFractionDigits:2});
+  var fInt = new Intl.NumberFormat('tr-TR',{maximumFractionDigits:0});
+  var fIn  = new Intl.NumberFormat('tr-TR',{maximumFractionDigits:6});
+  var f6   = new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2, maximumFractionDigits:6});
+
+  function tl(n){ var s = fTL.format(Math.abs(n) < 0.005 ? 0 : n); return s + ' ₺'; }
+  function signedTl(n){ var r = Math.abs(n) < 0.005 ? 0 : n; return (r > 0 ? '+' : '') + fTL.format(r) + ' ₺'; }
+  function cls(el, n){ el.classList.remove('pos','neg'); if (n > 0.004) el.classList.add('pos'); else if (n < -0.004) el.classList.add('neg'); }
+
+  function load(){
+    var data = null;
+    try { data = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch(e){}
+    KEYS.forEach(function(k){
+      var val = (data && typeof data[k] === 'string') ? data[k] : fIn.format(DEFAULTS[k]);
+      $(k).value = val;
+    });
+  }
+  function save(){
+    var o = {}; KEYS.forEach(function(k){ o[k] = $(k).value; });
+    try { localStorage.setItem(STORE, JSON.stringify(o)); } catch(e){}
+  }
+
+  function read(){
+    var v = {};
+    KEYS.forEach(function(k){
+      var raw = $(k).value;
+      v[k] = (k === 'commission' && String(raw).trim() === '') ? 0 : parseNum(raw);
+    });
+    return v;
+  }
+
+  var last = null;
+  function render(){
+    var v = read(), errs = validate(v);
+    KEYS.forEach(function(k){
+      var box = $(k).parentNode, hint = box.nextElementSibling;
+      if (errs[k]) { box.classList.add('err'); hint.textContent = errs[k]; hint.classList.add('show'); }
+      else { box.classList.remove('err'); hint.textContent = ''; hint.classList.remove('show'); }
+    });
+    var ids = ['rTotalProfit','rUnitProfit','rBuy','rSell','rPct','rCount','rUsedEp','rLeftEp','rInvest','rRevenue','rEpUnit','rComm'];
+    if (Object.keys(errs).length){
+      ids.forEach(function(id){ $(id).textContent = '—'; $(id).classList.remove('pos','neg'); });
+      $('boxTotal').classList.remove('pos','neg'); $('boxUnit').classList.remove('pos','neg');
+      $('rTotalSub').innerHTML = '&nbsp;'; $('rUnitSub').innerHTML = '&nbsp;'; $('rateEq').innerHTML = '&nbsp;';
+      $('warn').textContent = 'Bazı alanlar hatalı. Kırmızı işaretli alanları düzeltin.';
+      $('warn').classList.add('show');
+      last = null; return;
+    }
+    $('warn').classList.remove('show');
+    var r = calculate(v); last = {v:v, r:r};
+
+    $('rTotalProfit').textContent = signedTl(r.totalProfit); cls($('rTotalProfit'), r.totalProfit); cls($('boxTotal'), r.totalProfit);
+    $('rUnitProfit').textContent = signedTl(r.unitProfit);   cls($('rUnitProfit'), r.unitProfit);   cls($('boxUnit'), r.unitProfit);
+    $('rTotalSub').textContent = fInt.format(r.count) + ' kupon · %' + fTL.format(r.pct) + (r.totalProfit < -0.004 ? ' zarar' : ' kâr oranı');
+    $('rUnitSub').textContent = tl(r.sellTl - r.commUnit) + ' net satış − ' + tl(r.buyCost) + ' alış';
+
+    $('rBuy').textContent = tl(r.buyCost);
+    $('rSell').textContent = tl(r.sellTl);
+    $('rPct').textContent = '%' + fTL.format(r.pct); cls($('rPct'), r.pct);
+    $('rCount').textContent = fInt.format(r.count) + ' adet';
+    $('rUsedEp').textContent = fIn.format(r.usedEp) + ' EP';
+    $('rLeftEp').textContent = fIn.format(r.leftEp) + ' EP';
+    $('rInvest').textContent = tl(r.invest);
+    $('rRevenue').textContent = tl(r.revenue);
+    $('rEpUnit').textContent = f6.format(r.epUnit) + ' ₺';
+    $('rComm').textContent = tl(r.commTotal);
+    $('rateEq').textContent = '1M Yang = ' + f6.format(v.rateTl / v.rateYang) + ' ₺';
+  }
+
+  function toast(msg){
+    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast._h); toast._h = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+
+  function shareText(){
+    if (!last) return null;
+    var v = last.v, r = last.r;
+    return [
+      '📊 EP Kupon Kâr Hesabı (Lucifer)',
+      '',
+      'EP paketi: ' + tl(v.packPrice) + ' / ' + fIn.format(v.packEp) + ' EP',
+      'Kupon: ' + fIn.format(v.couponEp) + ' EP → ' + fIn.format(v.sellYang) + 'M Yang',
+      'Kur: ' + fIn.format(v.rateYang) + 'M = ' + tl(v.rateTl) + (v.commission ? ' · Komisyon: %' + fIn.format(v.commission) : ''),
+      '',
+      'Kupon alış: ' + tl(r.buyCost),
+      'Kupon satış: ' + tl(r.sellTl),
+      'Kupon başı net kâr: ' + signedTl(r.unitProfit) + ' (%' + fTL.format(r.pct) + ')',
+      'Kupon sayısı: ' + fInt.format(r.count) + ' · Kalan EP: ' + fIn.format(r.leftEp),
+      'Toplam yatırım: ' + tl(r.invest),
+      'Toplam satış: ' + tl(r.revenue) + (r.commTotal ? ' (komisyon ' + tl(r.commTotal) + ')' : ''),
+      '✅ Toplam net kâr: ' + signedTl(r.totalProfit)
+    ].join('\n');
+  }
+
+  function copyFallback(text){
+    try {
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly','');
+      ta.style.position = 'fixed'; ta.style.top = '-1000px'; document.body.appendChild(ta);
+      ta.select(); ta.setSelectionRange(0, text.length);
+      var ok = document.execCommand('copy'); document.body.removeChild(ta); return ok;
+    } catch(e){ return false; }
+  }
+
+  $('btnShare').addEventListener('click', function(){
+    var text = shareText();
+    if (!text){ toast('Önce hatalı alanları düzeltin'); return; }
+    if (navigator.share){
+      navigator.share({title:'EP Kupon Kâr Hesabı', text:text}).catch(function(err){
+        if (err && err.name === 'AbortError') return;
+        if (copyFallback(text)) toast('Sonuçlar panoya kopyalandı');
+      });
+    } else if (navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(function(){ toast('Sonuçlar panoya kopyalandı'); },
+        function(){ if (copyFallback(text)) toast('Sonuçlar panoya kopyalandı'); else alert(text); });
+    } else if (copyFallback(text)) toast('Sonuçlar panoya kopyalandı');
+    else alert(text);
+  });
+
+  $('btnReset').addEventListener('click', function(){
+    KEYS.forEach(function(k){ $(k).value = fIn.format(DEFAULTS[k]); });
+    save(); render(); toast('İlk değerlere dönüldü');
+  });
+
+  KEYS.forEach(function(k){
+    var el = $(k);
+    el.addEventListener('input', function(){ save(); render(); });
+    el.addEventListener('focus', function(){ setTimeout(function(){ try{ el.select(); }catch(e){} }, 0); });
+    el.addEventListener('blur', function(){
+      var n = parseNum(el.value);
+      if (isFinite(n)) { el.value = fIn.format(n); save(); render(); }
+    });
+    el.addEventListener('keydown', function(e){ if (e.key === 'Enter') el.blur(); });
+  });
+
+  load(); render();
+
+  /* ====== PWA: ikon + manifest + servis çalışanı ====== */
+  function makeIcon(size){
+    try {
+      var c = document.createElement('canvas'); c.width = c.height = size;
+      var x = c.getContext('2d');
+      var g = x.createLinearGradient(0,0,size,size); g.addColorStop(0,'#f5b942'); g.addColorStop(1,'#c97a12');
+      x.fillStyle = '#0b0f17'; x.fillRect(0,0,size,size);
+      var p = size*0.1, w = size - 2*p, rr = size*0.2;
+      x.fillStyle = g; x.beginPath();
+      x.moveTo(p+rr,p); x.arcTo(p+w,p,p+w,p+w,rr); x.arcTo(p+w,p+w,p,p+w,rr); x.arcTo(p,p+w,p,p,rr); x.arcTo(p,p,p+w,p,rr);
+      x.closePath(); x.fill();
+      x.fillStyle = '#1b1304'; x.font = 'bold ' + Math.round(size*0.34) + 'px -apple-system,Segoe UI,Roboto,Arial';
+      x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('EP', size/2, size/2 + size*0.02);
+      return c.toDataURL('image/png');
+    } catch(e){ return ''; }
+  }
+  var icon180 = makeIcon(180), icon192 = makeIcon(192), icon512 = makeIcon(512);
+  if (icon180){ $('appleIcon').href = icon180; $('favIcon').href = icon192; }
+
+  // Gömülü manifest (ayrı dosyaya gerek yok)
+  var manifest = {
+    name:'EP Kupon Kâr Hesaplama', short_name:'EP Kupon', lang:'tr',
+    start_url: location.href.split('#')[0], scope: location.href.replace(/[^/]*$/,''),
+    display:'standalone', background_color:'#0b0f17', theme_color:'#0b0f17',
+    icons:[{src:icon192,sizes:'192x192',type:'image/png'},{src:icon512,sizes:'512x512',type:'image/png',purpose:'any maskable'}]
+  };
+  try { $('manifestLink').href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest)); } catch(e){}
+
+  // Çevrimdışı önbellek: sw.js aynı klasörde ve HTTPS üzerinden sunulursa etkinleşir
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+    window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+  }
+})();
+</script>
+</body>
+</html>
